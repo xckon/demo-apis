@@ -1,0 +1,10 @@
+{
+  "name": "demo-8--hateoas",
+  "version": "1.0.0",
+  "author": "Ezequiel Falduto",
+  "license": "MIT",
+  "dependencies": {
+      "server-component": "1.0.0",
+      "json-data-store": "1.0.0"
+  }
+}

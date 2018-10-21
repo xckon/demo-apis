@@ -1,0 +1,11 @@
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "demo:1" : "node ./packages/demo-1--get",
+    "demo:8" : "node ./packages/demo-8--hateoas"
+  },
+  "devDependencies": {
+    "lerna": "^3.4.3"
+  }
+}

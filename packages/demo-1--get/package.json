@@ -1,0 +1,11 @@
+{
+  "name": "demo-1--get",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Ezequiel Falduto",
+  "license": "MIT",
+  "dependencies": {
+      "server-component": "1.0.0",
+      "json-data-store": "1.0.0"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "server-component",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Ezequiel Falduto",
+  "license": "MIT",
+  "dependencies": {
+    "hapi": "^17.6.0"
+  }
+}
