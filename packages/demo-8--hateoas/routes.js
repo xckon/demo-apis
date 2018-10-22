@@ -1,4 +1,5 @@
-const jsonDatastore = require('json-data-store');
+const ds = require('json-data-store');
+const db = ds.database();
 
 module.exports = [
     {
@@ -6,31 +7,10 @@ module.exports = [
         path: '/barrio',
         handler: (request, h) => {
             const url = 'http://' + request.info.host;
-
-            const resultados = jsonDatastore.barrios.map((barrio) => {
-                const bibliotecas = jsonDatastore.filtrarPorCampoString(
-                    jsonDatastore.bibliotecas,
-                    'barrio',
-                    barrio.barrio);
-
-                const obras = jsonDatastore.filtrarPorCampoString(
-                    jsonDatastore.obras,
-                    'barrio',
-                    barrio.barrio);
-
-                barrio.bibliotecas = bibliotecas.map((item) => {
-                    return {biblioteca: url + '/biblioteca/' + item.biblioteca};
-                });
-
-                barrio.obras = obras.map((item) => {
-                    return {biblioteca: url + '/obra/' + item.id};
-                });
-
-                return barrio;
-            });
+            const resultados = db.get('barrios').value()
 
             return h
-                .response({barrios: jsonDatastore.barrios})
+                .response({barrios: ds.getBarriosConRelaciones(url, resultados)})
                 .code(200);
         }
     },
@@ -38,17 +18,24 @@ module.exports = [
         method: 'GET',
         path: '/barrio/{nombreBarrio}',
         handler: (request, h) => {
+            const url = 'http://' + request.info.host;
+
             if (request.params.nombreBarrio) {
                 const nombreBarrio = request.params.nombreBarrio;
-                const resultados = jsonDatastore
-                    .filtrarPorCampoString(jsonDatastore.barrios, 'barrio', nombreBarrio);
+                const resultados = db.get('barrios')
+                    .find({barrio: nombreBarrio}).value();
 
-                if(resultados.length > 0) {
+                if(typeof resultados !== 'undefined') {
+
+                    const resultadosArray =
+                        (typeof resultados === 'object' ? [resultados] : resultados);
+
                     return h
-                        .response({barrios: resultados})
+                        .response({barrios:
+                            ds.getBarriosConRelaciones(url, resultadosArray)})
                         .code(200);
                 } else {
-                    h.response().code(404);
+                    return h.response().code(404);
                 }
 
             } else {
@@ -61,85 +48,13 @@ module.exports = [
     },
     {
         method: 'GET',
-        path: '/biblioteca',
-        handler: (request, h) => {
-            const url = 'http://' + request.info.host;
-
-            const resultados = jsonDatastore.bibliotecas.map((item) => {
-                const barrio = jsonDatastore
-                    .filtrarPorCampoString(jsonDatastore.barrios, 'barrio', item.barrio)
-                    .pop();
-
-                item.barrioLink = [{
-                    barrio: url + '/barrio/' + barrio.barrio.toLowerCase(),
-                }];
-
-                return item;
-            });
-
-            return h
-                .response({biblioteca: resultados})
-                .code(200);
-        }
-    },
-    {
-        method: 'GET',
-        path: '/biblioteca/{nombreBiblioteca}',
-        handler: (request, h) => {
-            if (request.params.nombreBiblioteca) {
-                const url = 'http://' + request.info.host + '/';
-                const nombreBiblioteca = request.params.nombreBiblioteca;
-                const resultados = jsonDatastore
-                    .filtrarPorCampoString(jsonDatastore.bibliotecas, 'biblioteca', nombreBiblioteca)
-                    .map((item) => {
-                        const barrio = jsonDatastore
-                            .filtrarPorCampoString(jsonDatastore.barrios, 'barrio', item.barrio)
-                            .pop();
-
-                        item.barrioLink = [{
-                            barrio: url + 'barrio/' + barrio.barrio.toLowerCase(),
-                        }];
-
-                        return item;
-                    })
-
-                if(resultados.length > 0) {
-                    return h
-                        .response({bibliotecas: resultados})
-                        .code(200);
-                } else {
-                    h.response().code(404);
-                }
-
-            } else {
-                return h
-                    .response({error: true, message: 'Falta nombreBiblioteca'})
-                    .code(400);
-            }
-
-        }
-    },
-    {
-        method: 'GET',
         path: '/obra',
         handler: (request, h) => {
-
-            const resultados =  jsonDatastore.obras.map((item) => {
-                const url = 'http://' + request.info.host + '/';
-                const barrio = jsonDatastore.filtrarPorCampoString(
-                    jsonDatastore.barrios, 'barrio', item.barrio).pop();
-
-                if(typeof barrio !== "undefined") {
-                    item.barrioLink = [{
-                        barrio: url + '/barrio/' + barrio.barrio.toLowerCase()
-                    }];
-                }
-
-                return item;
-            });
+            const obras = db.get('obras').value();
+            const url = 'http://' + request.info.host;
 
             return h
-                .response({obras: resultados})
+                .response({obras: ds.getObrasConRelaciones(url, obras)})
                 .code(200);
         }
     },
@@ -150,26 +65,12 @@ module.exports = [
             if (request.params.idObra) {
                 const url = 'http://' + request.info.host;
                 const idObra = parseInt(request.params.idObra);
+                const resultados = db.get('obras').find({id: idObra}).value();
 
-                const resultados = jsonDatastore
-                    .filtrarPorCampoNumero(jsonDatastore.obras, 'id', idObra)
-                    .map((item) => {
-
-                        const barrio = jsonDatastore.filtrarPorCampoString(
-                            jsonDatastore.barrios, 'barrio', item.barrio).pop();
-
-                        if(typeof barrio !== "undefined") {
-                            item.barrioLink = [{
-                                barrio: url + '/barrio/' + barrio.barrio.toLowerCase()
-                            }];
-                        }
-
-                        return item;
-                    });
-
-                if(resultados.length > 0) {
+                if(typeof resultados !== 'undefined') {
+                    const resultadosArray = typeof resultados === 'object' ? [resultados] : resultados;
                     return h
-                        .response({obras: resultados})
+                        .response({obras: ds.getObrasConRelaciones(url, resultadosArray)})
                         .code(200);
                 } else {
                     return h.response().code(404);
@@ -180,6 +81,7 @@ module.exports = [
                     .response({error: true, message: 'Falta idObra'})
                     .code(400);
             }
+
         }
     },
 ];

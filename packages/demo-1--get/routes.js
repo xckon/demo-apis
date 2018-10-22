@@ -1,12 +1,16 @@
-const jsonDatastore = require('json-data-store');
+const ds = require('json-data-store');
+const db = ds.database();
+
 
 module.exports = [
     {
         method: 'GET',
         path: '/barrio',
         handler: (request, h) => {
+            const barrios = db.get('barrios').value();
+            const barriosArray = typeof barrios === 'object' ? [barrios] : barrios;
             return h
-                .response({barrios: jsonDatastore.barrios})
+                .response({barrios: barriosArray})
                 .code(200);
         }
     },
@@ -16,15 +20,16 @@ module.exports = [
         handler: (request, h) => {
             if (request.params.nombreBarrio) {
                 const nombreBarrio = request.params.nombreBarrio;
-                const resultados = jsonDatastore
-                    .filtrarPorCampoString(jsonDatastore.barrios, 'barrio', nombreBarrio);
+                const resultados = db.get('barrios')
+                    .find({barrio: nombreBarrio}).value();
 
-                if(resultados.length > 0) {
+                if(typeof resultados !== 'undefined') {
+                    const resultadosArray = typeof resultados === 'object' ? [resultados] : resultados;
                     return h
-                        .response({barrios: resultados})
+                        .response({barrios: resultadosArray})
                         .code(200);
                 } else {
-                    h.response().code(404);
+                    return h.response().code(404);
                 }
 
             } else {
@@ -37,44 +42,12 @@ module.exports = [
     },
     {
         method: 'GET',
-        path: '/biblioteca',
-        handler: (request, h) => {
-            return h
-                .response({biblioteca: jsonDatastore.bibliotecas})
-                .code(200);
-        }
-    },
-    {
-        method: 'GET',
-        path: '/biblioteca/{nombreBiblioteca}',
-        handler: (request, h) => {
-            if (request.params.nombreBiblioteca) {
-                const nombreBiblioteca = request.params.nombreBiblioteca;
-                const resultados = jsonDatastore
-                    .filtrarPorCampoString(jsonDatastore.bibliotecas, 'biblioteca', nombreBiblioteca);
-
-                if(resultados.length > 0) {
-                    return h
-                        .response({bibliotecas: resultados})
-                        .code(200);
-                } else {
-                    h.response().code(404);
-                }
-
-            } else {
-                return h
-                    .response({error: true, message: 'Falta nombreBiblioteca'})
-                    .code(400);
-            }
-
-        }
-    },
-    {
-        method: 'GET',
         path: '/obra',
         handler: (request, h) => {
+            const obras = db.get('obras').value();
+            const obrasArray = typeof obras === 'object' ? [obras] : obras;
             return h
-                .response({obras: jsonDatastore.obras})
+                .response({obras: obrasArray})
                 .code(200);
         }
     },
@@ -84,12 +57,12 @@ module.exports = [
         handler: (request, h) => {
             if (request.params.idObra) {
                 const idObra = parseInt(request.params.idObra);
-                const resultados = jsonDatastore
-                    .filtrarPorCampoNumero(jsonDatastore.obras, 'id', idObra);
+                const resultados = db.get('obras').find({id: idObra}).value();
 
-                if(resultados.length > 0) {
+                if(typeof resultados !== 'undefined') {
+                    const resultadosArray = typeof resultados === 'object' ? [resultados] : resultados;
                     return h
-                        .response({obras: resultados})
+                        .response({obras: resultadosArray})
                         .code(200);
                 } else {
                     return h.response().code(404);
