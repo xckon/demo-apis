@@ -40,7 +40,11 @@ module.exports = [
 
             } else {
                 return h
-                    .response({error: true, message: 'Falta nombreBarrio'})
+                    .response({error: [{
+                        code: 400,
+                        title: 'Missing Field',
+                        detail: 'Falta nombreBarrio',
+                    }]})
                     .code(400);
             }
 
@@ -78,7 +82,11 @@ module.exports = [
 
             } else {
                 return h
-                    .response({error: true, message: 'Falta idObra'})
+                    .response({error: [{
+                        code: 400,
+                        title: 'Missing Field',
+                        detail: 'Falta idObra',
+                    }]})
                     .code(400);
             }
 

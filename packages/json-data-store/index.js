@@ -26,9 +26,14 @@ for(let i = 0; i < barrios.length; i++) {
 }
 
 const obras = getJSONNFileParsed('ba-obras.json').data;
+let obrasAutoIncrementSeed = 0;
 for(let i = 0; i < obras.length; i++) {
     obras[i].barrio = obras[i].barrio.toUpperCase();
     db.get('obras').push(obras[i]).write();
+
+    if(obras[i].id > obrasAutoIncrementSeed) {
+        obrasAutoIncrementSeed = obras[i].id;
+    }
 }
 
 module.exports = {
@@ -77,5 +82,10 @@ module.exports = {
 
             return obra;
         });
+    },
+
+    getNewObrasIdSeed: () => {
+        obrasAutoIncrementSeed++;
+        return obrasAutoIncrementSeed;
     }
 }

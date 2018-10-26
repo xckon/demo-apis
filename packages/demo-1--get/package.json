@@ -1,7 +1,7 @@
 {
   "name": "demo-1--get",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "routes.js",
   "author": "Ezequiel Falduto",
   "license": "MIT",
   "dependencies": {
